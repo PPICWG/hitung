@@ -3,200 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitung Visual - WKB</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Spreadsheet Viewer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- jsPDF + html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.3s ease-out',
-                        'bounce-in': 'bounceIn 0.6s ease-out'
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-    </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen">
-    <div x-data="hitungVisual()" x-init="init()" class="container mx-auto px-4 py-6">
-        <!-- Header -->
-        <div class="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl mb-8 overflow-hidden" data-aos="fade-down">
-            <div class="bg-gradient-to-r from-cyan-400 to-blue-500 p-8 text-center text-white">
-                <h1 class="text-4xl md:text-5xl font-bold mb-3 animate-bounce-in">🚛 HITUNG VISUAL</h1>
-                <p class="text-lg md:text-xl opacity-90"> by PPIC WKB</p>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-xl">
+        <div class="container mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">DataView Pro</h1>
+                        <p class="text-indigo-100 text-sm">Advanced Spreadsheet Viewer</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <div id="syncStatus" class="flex items-center space-x-2 text-white bg-white bg-opacity-10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                        <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span id="syncText" class="text-sm font-medium">Auto-Sync</span>
+                    </div>
+                    <button id="toggleSync" class="text-white bg-white bg-opacity-10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Controls Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100">
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+                <div class="flex-1 space-y-2">
+                    <label for="worksheetSelect" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Pilih Worksheet
+                    </label>
+                    <select id="worksheetSelect" class="w-full lg:w-80 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-700 font-medium transition-all duration-200 hover:border-gray-300">
+                        <option value="">Memuat worksheet...</option>
+                    </select>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    <button id="syncNowBtn" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:from-blue-600 hover:to-cyan-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" disabled>
+                        <svg id="syncNowIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Sync Now
+                    </button>
+                    <button id="previewBtn" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Preview
+                    </button>
+                    <button id="exportPDF" class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button id="exportPNG" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Export PNG
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-2 gap-8">
-            <!-- Input Section -->
-            <div class="space-y-6" data-aos="fade-right">
-                <!-- Container Settings -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-                    <button @click="containerVisible = !containerVisible" 
-                            class="flex items-center justify-between w-full text-left">
-                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
-                        Dimensi Container
-                        </h2>
-                        <span class="text-gray-500 transform transition-transform duration-300"
-                              :class="containerVisible ? 'rotate-90' : ''">▶</span>
-                    </button>
-                    
-                    <div x-show="containerVisible" x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 transform -translate-y-2"
-                         x-transition:enter-end="opacity-100 transform translate-y-0"
-                         class="mt-4 space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Lebar (cm)</label>
-                                <input type="number" x-model.number="container.width" @input="updateVisualization"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Tinggi (cm)</label>
-                                <input type="number" x-model.number="container.height" @input="updateVisualization"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mode Selection -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">📦 Mode Penataan</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button @click="mode = 'rows'; updateVisualization()" 
-                                :class="mode === 'rows' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                                class="py-3 px-6 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
-                            Keatas
-                        </button>
-                        <button @click="mode = 'columns'; updateVisualization()" 
-                                :class="mode === 'columns' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                                class="py-3 px-6 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
-                            Kesamping
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Box Input -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">💡 Input Penataan</h3>
-                    
-                    <!-- Header -->
-                    <div class="grid grid-cols-5 gap-2 mb-4 text-sm font-semibold text-gray-600 bg-gray-50 p-3 rounded-lg">
-                        <div class="text-center">No.</div>
-                        <div class="text-center">Jumlah</div>
-                        <div class="text-center">Lebar</div>
-                        <div class="text-center">Tinggi</div>
-                        <div class="text-center">Aksi</div>
-                    </div>
-                    
-                    <!-- Box Rows -->
-                    <div class="space-y-3 max-h-80 overflow-y-auto">
-                        <template x-for="(box, index) in boxes" :key="index">
-                            <div class="grid grid-cols-5 gap-2 items-center bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg animate-slide-up">
-                                <div class="text-center font-semibold text-gray-700" x-text="index + 1"></div>
-                                <input type="number" x-model.number="box.count" @input="updateVisualization" min="1"
-                                       class="px-3 py-2 border border-gray-300 rounded-lg text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all">
-                                <input type="number" x-model.number="box.width" @input="updateVisualization" min="1"
-                                       class="px-3 py-2 border border-gray-300 rounded-lg text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all">
-                                <input type="number" x-model.number="box.height" @input="updateVisualization" min="1"
-                                       class="px-3 py-2 border border-gray-300 rounded-lg text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all">
-                                <button @click="removeBox(index)" x-show="boxes.length > 1"
-                                        class="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto transition-all duration-200 transform hover:scale-110">
-                                    ×
-                                </button>
-                            </div>
-                        </template>
-                    </div>
-                    
-                    <button @click="addBox()" 
-                            class="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
-                        + Tambah Baris
-                    </button>
-                </div>
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="inline-flex items-center gap-3">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                <span class="text-gray-600">Memuat data...</span>
             </div>
+        </div>
 
-            <!-- Visualization Section -->
-            <div class="space-y-6" data-aos="fade-left">
-                <!-- Canvas -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">️📦 Visualisasi Layout</h2>
-                    <div class="bg-gray-50 rounded-xl p-4 text-center">
-                        <svg id="visualCanvas" class="mx-auto border-2 border-gray-300 rounded-lg shadow-inner" 
-                             width="400" height="400" viewBox="0 0 400 400">
+        <!-- Data Table Container -->
+        <div id="tableContainer" class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div id="tableContent" class="p-8">
+                <div class="text-center text-gray-500 py-16">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center">
+                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Siap Menampilkan Data</h3>
+                    <p class="text-gray-500">Pilih worksheet dari dropdown di atas untuk mulai melihat data spreadsheet Anda</p>
                 </div>
+            </div>
+        </div>
+    </main>
 
-                <!-- Summary -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6" id="summarySection">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">📊 Ringkasan Hasil</h3>
-                    
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                            <span class="font-semibold text-gray-700">Total MC:</span>
-                            <span class="text-xl font-bold text-blue-600" x-text="summary.totalBoxes"></span>
-                        </div>
-                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                            <span class="font-semibold text-gray-700">Area Terpakai:</span>
-                            <span class="text-xl font-bold text-green-600" x-text="summary.usedArea + ' cm²'"></span>
-                        </div>
-                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                            <span class="font-semibold text-gray-700">Area Container:</span>
-                            <span class="text-xl font-bold text-purple-600" x-text="summary.totalArea + ' cm²'"></span>
-                        </div>
-                        
-                        <!-- Efficiency -->
-                        <div class="bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-xl p-6 text-center text-white">
-                            <div class="text-lg font-semibold mb-2">Efisiensi Ruang</div>
-                            <div class="text-4xl font-bold" x-text="summary.efficiency + '%'"></div>
-                        </div>
-                        
-                        <!-- Warning -->
-                        <div x-show="summary.warning" x-transition
-                             class="bg-red-500 text-white p-4 rounded-xl text-center font-semibold">
-                            ⚠️ Ukuran total melebihi batas Container!
-                        </div>
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden border border-gray-200">
+            <div class="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
                     </div>
-                    
-                    <button @click="exportToPDF()" 
-                            class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
-                        📤 Export ke PDF
+                    <h3 class="text-2xl font-bold text-gray-800">Preview Export</h3>
+                </div>
+                <button id="closePreview" class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-8">
+                <div class="flex gap-4 mb-8">
+                    <button id="previewPDF" class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 border-2 border-red-500 shadow-lg font-medium">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Preview PDF
+                        </div>
+                    </button>
+                    <button id="previewPNG" class="px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 border-2 border-gray-200 shadow-sm font-medium">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Preview PNG
+                        </div>
+                    </button>
+                </div>
+                
+                <div id="previewContent" class="border-2 border-gray-200 rounded-2xl overflow-auto max-h-[65vh] bg-gray-50 shadow-inner">
+                    <!-- Preview content will be inserted here -->
+                </div>
+                
+                <div class="flex justify-end gap-4 mt-8">
+                    <button id="downloadFromPreview" class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Download File
                     </button>
                 </div>
             </div>
@@ -204,233 +170,650 @@
     </div>
 
     <script>
-        function hitungVisual() {
-            return {
-                container: {
-                    width: 229,
-                    height: 253
-                },
-                mode: 'rows',
-                containerVisible: false,
-                boxes: [
-                    { count: 3, width: 70, height: 50 },
-                    { count: 5, width: 45, height: 40 }
-                ],
-                summary: {
-                    totalBoxes: 0,
-                    usedArea: 0,
-                    totalArea: 0,
-                    efficiency: 0,
-                    warning: false
-                },
-                colors: ['#ef4444', '#06b6d4', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#6366f1'],
+        // Sample data for demonstration - replace with your actual Google Sheets data
+        const sampleData = {
+            'Sheet1': [
+                ['Nama', 'Umur', 'Kota', 'Pekerjaan', 'Gaji'],
+                ['Ahmad Rizki', '28', 'Jakarta', 'Software Engineer', 'Rp 15.000.000'],
+                ['Siti Nurhaliza', '32', 'Bandung', 'Marketing Manager', 'Rp 12.000.000'],
+                ['Budi Santoso', '25', 'Surabaya', 'Graphic Designer', 'Rp 8.500.000'],
+                ['Maya Sari', '29', 'Yogyakarta', 'Data Analyst', 'Rp 10.000.000'],
+                ['Andi Wijaya', '35', 'Medan', 'Project Manager', 'Rp 18.000.000']
+            ],
+            'Penjualan': [
+                ['Tanggal', 'Produk', 'Jumlah', 'Harga Satuan', 'Total'],
+                ['2024-01-15', 'Laptop Dell', '2', 'Rp 8.500.000', 'Rp 17.000.000'],
+                ['2024-01-16', 'Mouse Wireless', '10', 'Rp 150.000', 'Rp 1.500.000'],
+                ['2024-01-17', 'Keyboard Mechanical', '5', 'Rp 750.000', 'Rp 3.750.000'],
+                ['2024-01-18', 'Monitor 24 inch', '3', 'Rp 2.200.000', 'Rp 6.600.000'],
+                ['2024-01-19', 'Webcam HD', '8', 'Rp 450.000', 'Rp 3.600.000']
+            ],
+            'Inventori': [
+                ['Kode Barang', 'Nama Barang', 'Kategori', 'Stok', 'Harga Beli', 'Harga Jual'],
+                ['BRG001', 'Laptop Gaming ASUS', 'Elektronik', '15', 'Rp 12.000.000', 'Rp 15.000.000'],
+                ['BRG002', 'Smartphone Samsung', 'Elektronik', '25', 'Rp 4.500.000', 'Rp 6.000.000'],
+                ['BRG003', 'Headphone Sony', 'Audio', '40', 'Rp 800.000', 'Rp 1.200.000'],
+                ['BRG004', 'Tablet iPad', 'Elektronik', '12', 'Rp 8.000.000', 'Rp 10.500.000'],
+                ['BRG005', 'Speaker Bluetooth', 'Audio', '30', 'Rp 350.000', 'Rp 550.000']
+            ]
+        };
+        
+        const SPREADSHEET_ID = '1BqxuxPG_nsBzc1RBB7b4CSagBs3G8f8KvIbNDTgRHdE';
+        const API_KEY = 'AIzaSyCfnSym_wpPtzWL0P3-kslY1Y14B7nD-34';
+        
+        let currentWorksheetData = null;
+        let currentWorksheetName = '';
+        let currentPreviewMode = 'pdf';
+        let previewCanvas = null;
+        let autoSyncEnabled = true;
+        let syncInterval = null;
+        let lastSyncTime = null;
 
-                init() {
-                    AOS.init({
-                        duration: 800,
-                        easing: 'ease-in-out',
-                        once: true
+        // DOM Elements
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableContent = document.getElementById('tableContent');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const exportPDFBtn = document.getElementById('exportPDF');
+        const exportPNGBtn = document.getElementById('exportPNG');
+        const previewBtn = document.getElementById('previewBtn');
+        const previewModal = document.getElementById('previewModal');
+        const closePreview = document.getElementById('closePreview');
+        const previewPDFBtn = document.getElementById('previewPDF');
+        const previewPNGBtn = document.getElementById('previewPNG');
+        const previewContent = document.getElementById('previewContent');
+        const downloadFromPreview = document.getElementById('downloadFromPreview');
+        const syncNowBtn = document.getElementById('syncNowBtn');
+        const syncNowIcon = document.getElementById('syncNowIcon');
+        const toggleSyncBtn = document.getElementById('toggleSync');
+        const syncStatus = document.getElementById('syncStatus');
+        const syncIcon = document.getElementById('syncIcon');
+        const syncText = document.getElementById('syncText');
+
+        // Initialize the application
+        async function init() {
+            try {
+                await loadWorksheets();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showError('Gagal memuat data. Periksa koneksi internet dan coba lagi.');
+            }
+        }
+
+        // Load available worksheets
+        async function loadWorksheets() {
+            try {
+                console.log('Attempting to load worksheets...');
+                console.log('Spreadsheet ID:', SPREADSHEET_ID);
+                console.log('API Key:', API_KEY ? 'Present' : 'Missing');
+                
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
+                console.log('Request URL:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('Response status:', response.status);
+                console.log('Response data:', data);
+                
+                if (!response.ok) {
+                    console.error('API Error:', data.error);
+                    throw new Error(data.error?.message || 'Failed to load worksheets');
+                }
+
+                worksheetSelect.innerHTML = '<option value="">Pilih worksheet...</option>';
+                
+                if (data.sheets && data.sheets.length > 0) {
+                    data.sheets.forEach(sheet => {
+                        const option = document.createElement('option');
+                        option.value = sheet.properties.title;
+                        option.textContent = sheet.properties.title;
+                        worksheetSelect.appendChild(option);
                     });
-                    this.updateVisualization();
-                },
+                    console.log('Worksheets loaded successfully:', data.sheets.length);
+                } else {
+                    throw new Error('No worksheets found in spreadsheet');
+                }
 
-                addBox() {
-                    this.boxes.push({ count: 1, width: 50, height: 40 });
-                    this.updateVisualization();
-                },
+            } catch (error) {
+                console.error('Error loading worksheets:', error);
+                
+                // Fallback to sample data if Google Sheets fails
+                console.log('Falling back to sample data...');
+                worksheetSelect.innerHTML = '<option value="">Pilih worksheet...</option>';
+                
+                Object.keys(sampleData).forEach(sheetName => {
+                    const option = document.createElement('option');
+                    option.value = sheetName;
+                    option.textContent = sheetName + ' (Sample)';
+                    worksheetSelect.appendChild(option);
+                });
+                
+                // Show warning message
+                showWarning('Menggunakan data sample karena tidak dapat terhubung ke Google Sheets. Periksa API key dan permission spreadsheet.');
+            }
+        }
 
-                removeBox(index) {
-                    if (this.boxes.length > 1) {
-                        this.boxes.splice(index, 1);
-                        this.updateVisualization();
-                    }
-                },
+        // Load worksheet data
+        async function loadWorksheetData(worksheetName) {
+            if (!worksheetName) return;
 
-                updateVisualization() {
-                    this.calculateSummary();
-                    this.drawVisualization();
-                },
+            showLoading(true);
+            currentWorksheetName = worksheetName.replace(' (Sample)', '');
 
-                calculateSummary() {
-                    let totalBoxes = 0;
-                    let usedArea = 0;
-                    let maxWidth = 0;
-                    let totalHeight = 0;
+            try {
+                // Check if this is sample data
+                if (worksheetName.includes('(Sample)') || sampleData[currentWorksheetName]) {
+                    console.log('Loading sample data for:', currentWorksheetName);
+                    currentWorksheetData = sampleData[currentWorksheetName] || [];
+                    displayTable(currentWorksheetData, currentWorksheetName);
+                    enableExportButtons(true);
+                    return;
+                }
 
-                    this.boxes.forEach(box => {
-                        totalBoxes += box.count;
-                        usedArea += box.count * box.width * box.height;
-                        
-                        if (this.mode === 'rows') {
-                            maxWidth = Math.max(maxWidth, box.count * box.width);
-                            totalHeight += box.height;
-                        } else {
-                            maxWidth += box.width;
-                            totalHeight = Math.max(totalHeight, box.count * box.height);
-                        }
-                    });
+                // Try to load from Google Sheets
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(currentWorksheetName)}?key=${API_KEY}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error?.message || 'Failed to load worksheet data');
+                }
 
-                    const totalArea = this.container.width * this.container.height;
-                    const efficiency = ((usedArea / totalArea) * 100).toFixed(1);
+                currentWorksheetData = data.values || [];
+                displayTable(currentWorksheetData, currentWorksheetName);
+                enableExportButtons(true);
+                
+                // Start auto-sync for this worksheet
+                if (autoSyncEnabled) {
+                    startAutoSync();
+                }
 
-                    this.summary = {
-                        totalBoxes: totalBoxes.toLocaleString(),
-                        usedArea: usedArea.toLocaleString(),
-                        totalArea: totalArea.toLocaleString(),
-                        efficiency: efficiency,
-                        warning: maxWidth > this.container.width || totalHeight > this.container.height
-                    };
-                },
+            } catch (error) {
+                console.error('Error loading worksheet data:', error);
+                
+                // Fallback to sample data if available
+                if (sampleData[currentWorksheetName]) {
+                    console.log('Falling back to sample data for:', currentWorksheetName);
+                    currentWorksheetData = sampleData[currentWorksheetName];
+                    displayTable(currentWorksheetData, currentWorksheetName + ' (Sample)');
+                    enableExportButtons(true);
+                    showWarning('Menggunakan data sample karena tidak dapat mengakses Google Sheets.');
+                } else {
+                    showError('Gagal memuat data worksheet. Periksa nama worksheet dan izin akses.');
+                    enableExportButtons(false);
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
 
-                drawVisualization() {
-                    const svg = document.getElementById('visualCanvas');
-                    const scale = Math.min(380 / this.container.width, 380 / this.container.height);
-                    const scaledWidth = this.container.width * scale;
-                    const scaledHeight = this.container.height * scale;
+        // Display table
+        function displayTable(data, worksheetName) {
+            if (!data || data.length === 0) {
+                tableContent.innerHTML = `
+                    <div class="text-center text-gray-500 py-12">
+                        <p class="text-lg">Worksheet "${worksheetName}" kosong atau tidak ada data</p>
+                    </div>
+                `;
+                return;
+            }
 
-                    svg.setAttribute('viewBox', `0 0 ${scaledWidth + 20} ${scaledHeight + 20}`);
-                    svg.innerHTML = '';
+            const headers = data[0] || [];
+            const rows = data.slice(1);
 
-                    // Container outline
-                    const containerRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    containerRect.setAttribute('x', 10);
-                    containerRect.setAttribute('y', 10);
-                    containerRect.setAttribute('width', scaledWidth);
-                    containerRect.setAttribute('height', scaledHeight);
-                    containerRect.setAttribute('fill', 'none');
-                    containerRect.setAttribute('stroke', '#374151');
-                    containerRect.setAttribute('stroke-width', 3);
-                    containerRect.setAttribute('rx', 8);
-                    svg.appendChild(containerRect);
+            let tableHTML = `
+                <div class="mb-8 pb-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">${worksheetName}</h2>
+                            <div class="flex items-center gap-4 text-sm text-gray-600">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    ${rows.length} baris data
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0v10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
+                                    </svg>
+                                    ${headers.length} kolom
+                                </span>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-xl border border-green-200">
+                            <span class="text-sm font-medium">Data Loaded</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                            <tr>
+            `;
 
-                    // Draw boxes
-                    let currentY = 10;
-                    let currentX = 10;
+            headers.forEach(header => {
+                tableHTML += `<th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wide border-b-2 border-gray-200">${header || ''}</th>`;
+            });
 
-                    this.boxes.forEach((box, boxIndex) => {
-                        const color = this.colors[boxIndex % this.colors.length];
-                        
-                        if (this.mode === 'rows') {
-                            currentX = 10;
-                            for (let i = 0; i < box.count; i++) {
-                                this.createBox(svg, currentX, scaledHeight + 10 - currentY - (box.height * scale), 
-                                             box.width * scale, box.height * scale, color, box);
-                                currentX += box.width * scale;
-                            }
-                            currentY += box.height * scale;
-                        } else {
-                            let columnY = scaledHeight + 10;
-                            for (let i = 0; i < box.count; i++) {
-                                columnY -= box.height * scale;
-                                this.createBox(svg, currentX, columnY, 
-                                             box.width * scale, box.height * scale, color, box);
-                            }
-                            currentX += box.width * scale;
-                        }
-                    });
-                },
+            tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
 
-                createBox(svg, x, y, width, height, color, box) {
-                    // Box with gradient and shadow
-                    const defs = svg.querySelector('defs') || svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
+            rows.forEach((row, index) => {
+                tableHTML += `<tr class="${index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-gray-50 hover:bg-blue-50'} transition-colors duration-150">`;
+                
+                for (let i = 0; i < headers.length; i++) {
+                    const cellValue = row[i] || '';
+                    tableHTML += `<td class="px-6 py-4 text-sm text-gray-800 border-b border-gray-100">${cellValue}</td>`;
+                }
+                
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            tableContent.innerHTML = tableHTML;
+        }
+
+        // Show loading state
+        function showLoading(show) {
+            if (show) {
+                loadingIndicator.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+            } else {
+                loadingIndicator.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            tableContent.innerHTML = `
+                <div class="text-center text-red-500 py-12">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-lg">${message}</p>
+                </div>
+            `;
+        }
+
+        // Show warning message
+        function showWarning(message) {
+            const warning = document.createElement('div');
+            warning.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-lg font-medium max-w-md text-center';
+            warning.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(warning);
+            
+            setTimeout(() => {
+                if (document.body.contains(warning)) {
+                    document.body.removeChild(warning);
+                }
+            }, 5000);
+        }
+
+        // Enable/disable export buttons
+        function enableExportButtons(enable) {
+            exportPDFBtn.disabled = !enable;
+            exportPNGBtn.disabled = !enable;
+            previewBtn.disabled = !enable;
+            syncNowBtn.disabled = !enable;
+        }
+
+        // Start auto-sync
+        function startAutoSync() {
+            if (syncInterval) clearInterval(syncInterval);
+            
+            syncInterval = setInterval(() => {
+                if (currentWorksheetName && autoSyncEnabled) {
+                    syncWorksheetData();
+                }
+            }, 30000); // Sync every 30 seconds
+        }
+
+        // Stop auto-sync
+        function stopAutoSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+            }
+        }
+
+        // Toggle auto-sync
+        function toggleAutoSync() {
+            autoSyncEnabled = !autoSyncEnabled;
+            
+            if (autoSyncEnabled) {
+                startAutoSync();
+                syncText.textContent = 'Auto-Sync ON';
+                syncStatus.className = 'flex items-center space-x-2 text-white bg-green-500 bg-opacity-20 px-4 py-2 rounded-lg backdrop-blur-sm border border-green-400';
+            } else {
+                stopAutoSync();
+                syncText.textContent = 'Auto-Sync OFF';
+                syncStatus.className = 'flex items-center space-x-2 text-white bg-red-500 bg-opacity-20 px-4 py-2 rounded-lg backdrop-blur-sm border border-red-400';
+            }
+        }
+
+        // Sync worksheet data
+        async function syncWorksheetData() {
+            if (!currentWorksheetName) return;
+
+            // Show sync animation
+            syncIcon.classList.add('animate-spin');
+            syncNowIcon.classList.add('animate-spin');
+
+            try {
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(currentWorksheetName)}?key=${API_KEY}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error?.message || 'Failed to sync worksheet data');
+                }
+
+                const newData = data.values || [];
+                
+                // Check if data has changed
+                const dataChanged = JSON.stringify(newData) !== JSON.stringify(currentWorksheetData);
+                
+                if (dataChanged) {
+                    currentWorksheetData = newData;
+                    displayTable(currentWorksheetData, currentWorksheetName);
+                    showSyncNotification('Data updated successfully!', 'success');
+                } else {
+                    showSyncNotification('Data is up to date', 'info');
+                }
+
+                lastSyncTime = new Date();
+
+            } catch (error) {
+                console.error('Error syncing worksheet data:', error);
+                showSyncNotification('Sync failed. Check connection.', 'error');
+            } finally {
+                // Remove sync animation
+                setTimeout(() => {
+                    syncIcon.classList.remove('animate-spin');
+                    syncNowIcon.classList.remove('animate-spin');
+                }, 500);
+            }
+        }
+
+        // Show sync notification
+        function showSyncNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 translate-x-full`;
+            
+            if (type === 'success') {
+                notification.className += ' bg-green-500';
+            } else if (type === 'error') {
+                notification.className += ' bg-red-500';
+            } else {
+                notification.className += ' bg-blue-500';
+            }
+            
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Export to PDF
+        async function exportToPDF() {
+            if (!currentWorksheetData || !currentWorksheetName) return;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            // Add title
+            pdf.setFontSize(16);
+            pdf.text(currentWorksheetName, 20, 20);
+
+            // Add table data
+            let yPosition = 40;
+            const headers = currentWorksheetData[0] || [];
+            const rows = currentWorksheetData.slice(1);
+
+            // Headers
+            pdf.setFontSize(10);
+            pdf.setFont(undefined, 'bold');
+            let xPosition = 20;
+            headers.forEach(header => {
+                pdf.text(header || '', xPosition, yPosition);
+                xPosition += 40;
+            });
+
+            // Rows
+            pdf.setFont(undefined, 'normal');
+            yPosition += 10;
+            rows.forEach(row => {
+                if (yPosition > 270) {
+                    pdf.addPage();
+                    yPosition = 20;
+                }
+                
+                xPosition = 20;
+                for (let i = 0; i < headers.length; i++) {
+                    const cellValue = row[i] || '';
+                    pdf.text(cellValue.toString(), xPosition, yPosition);
+                    xPosition += 40;
+                }
+                yPosition += 8;
+            });
+
+            pdf.save(`${currentWorksheetName}.pdf`);
+        }
+
+        // Export to PNG
+        async function exportToPNG() {
+            if (!tableContent) return;
+
+            try {
+                const canvas = await html2canvas(tableContent, {
+                    backgroundColor: '#ffffff',
+                    scale: 2
+                });
+
+                const link = document.createElement('a');
+                link.download = `${currentWorksheetName}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            } catch (error) {
+                console.error('Error exporting to PNG:', error);
+                alert('Gagal mengexport ke PNG. Coba lagi.');
+            }
+        }
+
+        // Show preview modal
+        function showPreview() {
+            previewModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            showPreviewContent('pdf');
+        }
+
+        // Hide preview modal
+        function hidePreview() {
+            previewModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Show preview content
+        async function showPreviewContent(mode) {
+            currentPreviewMode = mode;
+            
+            // Update button states
+            previewPDFBtn.className = mode === 'pdf' 
+                ? 'px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 border-2 border-red-500 shadow-lg font-medium'
+                : 'px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 border-2 border-gray-200 shadow-sm font-medium';
+            
+            previewPNGBtn.className = mode === 'png' 
+                ? 'px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200 border-2 border-emerald-500 shadow-lg font-medium'
+                : 'px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 border-2 border-gray-200 shadow-sm font-medium';
+
+            if (mode === 'pdf') {
+                showPDFPreview();
+            } else {
+                await showPNGPreview();
+            }
+        }
+
+        // Show PDF preview
+        function showPDFPreview() {
+            if (!currentWorksheetData || !currentWorksheetName) return;
+
+            const headers = currentWorksheetData[0] || [];
+            const rows = currentWorksheetData.slice(1);
+
+            let previewHTML = `
+                <div class="bg-white p-8 shadow-lg" style="width: 210mm; min-height: 297mm; margin: 0 auto;">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 mb-2">${currentWorksheetName}</h1>
+                        <p class="text-sm text-gray-600">${rows.length} baris data</p>
+                    </div>
                     
-                    const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-                    const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
-                    gradient.setAttribute('id', gradientId);
-                    gradient.innerHTML = `
-                        <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:${color};stop-opacity:0.7" />
-                    `;
-                    defs.appendChild(gradient);
+                    <div class="overflow-hidden">
+                        <table class="w-full border-collapse border border-gray-300 text-sm">
+                            <thead>
+                                <tr class="bg-gray-100">
+            `;
 
-                    const boxRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    boxRect.setAttribute('x', x);
-                    boxRect.setAttribute('y', y);
-                    boxRect.setAttribute('width', width);
-                    boxRect.setAttribute('height', height);
-                    boxRect.setAttribute('fill', `url(#${gradientId})`);
-                    boxRect.setAttribute('stroke', '#ffffff');
-                    boxRect.setAttribute('stroke-width', 2);
-                    boxRect.setAttribute('rx', 4);
-                    boxRect.setAttribute('filter', 'drop-shadow(2px 2px 4px rgba(0,0,0,0.2))');
-                    svg.appendChild(boxRect);
+            headers.forEach(header => {
+                previewHTML += `<th class="border border-gray-300 px-3 py-2 text-left font-semibold">${header || ''}</th>`;
+            });
 
-                    // Text label
-                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    text.setAttribute('x', x + width / 2);
-                    text.setAttribute('y', y + height / 2);
-                    text.setAttribute('text-anchor', 'middle');
-                    text.setAttribute('dominant-baseline', 'middle');
-                    text.setAttribute('fill', '#ffffff');
-                    text.setAttribute('font-size', Math.min(14, Math.min(width / 6, height / 3)));
-                    text.setAttribute('font-weight', 'bold');
-                    text.setAttribute('font-family', 'system-ui, sans-serif');
-                    text.textContent = `${box.width}×${box.height}`;
-                    svg.appendChild(text);
-                },
+            previewHTML += `
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
 
-                async exportToPDF() {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
+            rows.forEach((row, index) => {
+                previewHTML += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">`;
+                
+                for (let i = 0; i < headers.length; i++) {
+                    const cellValue = row[i] || '';
+                    previewHTML += `<td class="border border-gray-300 px-3 py-2">${cellValue}</td>`;
+                }
+                
+                previewHTML += '</tr>';
+            });
 
-                    // Title
-                    doc.setFontSize(24);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('📦 HITUNG VISUAL', 20, 30);
-                    
-                    doc.setFontSize(14);
-                    doc.setFont(undefined, 'normal');
-                    doc.text('Layout Penataan MC Custom', 20, 45);
+            previewHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
 
-                    // Container info
-                    doc.setFontSize(12);
-                    doc.text(`Ukuran Container: ${this.container.width} cm × ${this.container.height} cm`, 20, 65);
-                    doc.text(`Mode Penataan: ${this.mode === 'rows' ? 'Keatas' : 'Kesamping'}`, 20, 75);
+            previewContent.innerHTML = previewHTML;
+        }
 
-                    // Box details
-                    let yPos = 95;
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Detail Penataan:', 20, yPos);
-                    yPos += 10;
+        // Show PNG preview
+        async function showPNGPreview() {
+            if (!tableContent) return;
 
-                    doc.setFont(undefined, 'normal');
-                    this.boxes.forEach((box, index) => {
-                        doc.text(`${this.mode === 'rows' ? 'Baris' : 'Kolom'} ${index + 1}: ${box.count} kotak @ ${box.width} × ${box.height} cm`, 20, yPos);
-                        yPos += 10;
-                    });
+            try {
+                previewContent.innerHTML = '<div class="flex items-center justify-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div><span class="ml-3">Membuat preview...</span></div>';
 
-                    // Summary
-                    yPos += 10;
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Ringkasan Hasil:', 20, yPos);
-                    yPos += 10;
+                const canvas = await html2canvas(tableContent, {
+                    backgroundColor: '#ffffff',
+                    scale: 2
+                });
 
-                    doc.setFont(undefined, 'normal');
-                    doc.text(`Total MC: ${this.summary.totalBoxes}`, 20, yPos);
-                    yPos += 10;
-                    doc.text(`Area Terpakai: ${this.summary.usedArea} cm²`, 20, yPos);
-                    yPos += 10;
-                    doc.text(`Area Container: ${this.summary.totalArea} cm²`, 20, yPos);
-                    yPos += 10;
-                    doc.text(`Efisiensi: ${this.summary.efficiency}%`, 20, yPos);
+                previewCanvas = canvas;
 
-                    // Capture visualization
-                    try {
-                        const canvas = await html2canvas(document.getElementById('visualCanvas'));
-                        const imgData = canvas.toDataURL('image/png');
-                        doc.addImage(imgData, 'PNG', 20, yPos + 20, 160, 120);
-                    } catch (error) {
-                        console.log('Could not capture visualization');
-                    }
+                const img = document.createElement('img');
+                img.src = canvas.toDataURL();
+                img.className = 'max-w-full h-auto border rounded-lg shadow-lg mx-auto block';
+                
+                previewContent.innerHTML = '';
+                previewContent.appendChild(img);
 
-                    // Export date
-                    const now = new Date();
-                    doc.text(`Exported: ${now.toLocaleDateString('id-ID')}`, 20, 280);
+            } catch (error) {
+                console.error('Error creating PNG preview:', error);
+                previewContent.innerHTML = '<div class="text-center text-red-500 py-12">Gagal membuat preview PNG</div>';
+            }
+        }
 
-                    doc.save('hitung-visual-WKB.pdf');
+        // Download from preview
+        function downloadFromPreview() {
+            if (currentPreviewMode === 'pdf') {
+                exportToPDF();
+            } else {
+                if (previewCanvas) {
+                    const link = document.createElement('a');
+                    link.download = `${currentWorksheetName}.png`;
+                    link.href = previewCanvas.toDataURL();
+                    link.click();
+                } else {
+                    exportToPNG();
                 }
             }
         }
+
+        // Event listeners
+        worksheetSelect.addEventListener('change', (e) => {
+            loadWorksheetData(e.target.value);
+        });
+
+        exportPDFBtn.addEventListener('click', exportToPDF);
+        exportPNGBtn.addEventListener('click', exportToPNG);
+        previewBtn.addEventListener('click', showPreview);
+        closePreview.addEventListener('click', hidePreview);
+        previewPDFBtn.addEventListener('click', () => showPreviewContent('pdf'));
+        previewPNGBtn.addEventListener('click', () => showPreviewContent('png'));
+        downloadFromPreview.addEventListener('click', downloadFromPreview);
+        syncNowBtn.addEventListener('click', syncWorksheetData);
+        toggleSyncBtn.addEventListener('click', toggleAutoSync);
+
+        // Close modal when clicking outside
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) {
+                hidePreview();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !previewModal.classList.contains('hidden')) {
+                hidePreview();
+            }
+        });
+
+        // Initialize the app
+        init();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b789e3352f9b07',t:'MTc1NDU3NzcyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'970fa21937a7e78b',t:'MTc1NTUwMTQ2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
