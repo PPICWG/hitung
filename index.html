@@ -1203,7 +1203,7 @@
             try {
                 const encodedSheetName = encodeURIComponent(sheetName);
                 // Fetch only columns A through J
-                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheetName}!A:J?key=${apiKey}`);
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheetName}!A:I?key=${apiKey}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1327,7 +1327,7 @@
             `;
 
             // Fixed to show exactly 10 columns (A through J)
-            const maxColumns = 10;
+            const maxColumns = 9;
 
             // Display all rows with premium styling and data type detection
             values.forEach((row, rowIndex) => {
@@ -1338,11 +1338,7 @@
                     const cellValue = row[colIndex] || '';
                     
                     // Add column headers for first row if no data
-                    let displayValue = cellValue;
-                    if (rowIndex === 0 && !cellValue) {
-                        const columnLetter = String.fromCharCode(65 + colIndex); // A, B, C, etc.
-                        displayValue = columnLetter;
-                    }
+                    
                     
                     // Detect data type for smart styling
                     const dataType = detectDataType(cellValue);
