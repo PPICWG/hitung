@@ -1338,7 +1338,11 @@
                     const cellValue = row[colIndex] || '';
                     
                     // Add column headers for first row if no data
-                    
+                    let displayValue = cellValue;
+                    if (rowIndex === 0 && !cellValue) {
+                        const columnLetter = String.fromCharCode(65 + colIndex); // A, B, C, etc.
+                        displayValue = columnLetter;
+                    }
                     
                     // Detect data type for smart styling
                     const dataType = detectDataType(cellValue);
